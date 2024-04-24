@@ -36,9 +36,17 @@ async function run() {
             const cursor = userCollection.find();
             const result = await cursor.toArray();
             res.send(result);
-
         })
 
+        //get user from mongo
+        app.get('/users/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const user = await userCollection.findOne(query);
+            res.send(user);
+        })
+
+        //create new user
         app.post('/users', async (req, res) => {
             const user = req.body;
             console.log("new User", user);
@@ -47,13 +55,30 @@ async function run() {
 
         });
 
+        //Update User
+        app.put("/users/:id", async (req, res) => {
+            const id = req.params.id;
+            const user = req.body;
+            console.log(id, user);
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updatedUser = {
+                $set: {
+                    name: user.name,
+                    email: user.email
+                }
+            }
+            const result = await userCollection.updateOne(filter, updatedUser, options);
+            res.send(result);
+        })
+
+        //delete user
         app.delete('/users/:id', async (req, res) => {
             const id = req.params.id;
             console.log("delete from DB ", id);
             const query = { _id: new ObjectId(id) };
             const result = await userCollection.deleteOne(query);
             res.send(result);
-
         })
 
         // Send a ping to confirm a successful connection
